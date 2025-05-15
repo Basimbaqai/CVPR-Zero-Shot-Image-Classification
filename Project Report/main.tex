@@ -1,0 +1,226 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --------------------------------------------------------
+% Tau
+% LaTeX Template
+% Version 2.4.4 (28/02/2025)
+%
+% Author:
+% Guillermo Jimenez (memo.notess1@gmail.com)
+%
+% License:
+% Creative Commons CC BY 4.0
+% --------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[9pt,a4paper,twocolumn,twoside]{tau-class/tau}
+\usepackage[english]{babel}
+% \usepackage[style=ieeetr]{biblatex} % REMOVE THIS LINE
+\addbibresource{references.bib}
+%% Spanish babel recomendation
+% \usepackage[spanish,es-nodecimaldot,es-noindentfirst]{babel}
+%% Draft watermark
+% \usepackage{draftwatermark}
+%----------------------------------------------------------
+% TITLE
+%----------------------------------------------------------
+\journalname{CVPR VizWiz Challenge Report}
+\title{Zero Shot Image Classification On VizWiz Image Classification Dataset}
+%----------------------------------------------------------
+% AUTHORS, AFFILIATIONS AND PROFESSOR
+%----------------------------------------------------------
+\author[a]{Basim Baqai}
+\author[a]{Maisum Abbas}
+\author[a]{Abdul Rehman Nazeer}
+%----------------------------------------------------------
+\affil[a]{Department of Artificial Intelligence}
+\professor{Bilal Ahsan - Spring 2025}
+%----------------------------------------------------------
+% FOOTER INFORMATION
+%----------------------------------------------------------
+\institution{FAST University}
+\footinfo{Project Report}
+\theday{May 13, 2025}
+\leadauthor{Baqai et al.}
+\course{Artificial Neural Networks}
+%----------------------------------------------------------
+% ABSTRACT AND KEYWORDS
+%----------------------------------------------------------
+\begin{abstract}
+This study explores zero-shot image classification performance on the VizWiz Image Classification Dataset, which features photos taken by visually impaired individuals. We recreate and extend the work from Bafghi et al. (CVPR 2023), comparing the performance of advanced neural network architectures (AlexNet, VGG11, ViT, and CLIP) across multiple datasets: ImageNet, ImageNetV2, ObjectNet, and VizWiz. Our analysis focuses particularly on CLIP's zero-shot capabilities and its applicability to accessibility-focused datasets. Through prompt engineering and embedding-based retrieval methods, we demonstrate how these models perform on images captured in challenging, real-world conditions by blind photographers, highlighting both the strengths and limitations of current zero-shot classification approaches.
+\end{abstract}
+%----------------------------------------------------------
+\keywords{Zero-shot learning, image classification, CLIP, VizWiz dataset, computer vision, embeddings}
+%----------------------------------------------------------
+\begin{document}
+\maketitle
+\thispagestyle{firststyle}
+\tauabstract
+% \tableofcontents
+% \linenumbers
+%----------------------------------------------------------
+\section{Introduction}
+\taustart{V}isual recognition systems have made remarkable progress in recent years, but their performance on diverse, real-world data remains challenging, particularly for images captured by individuals with visual impairments. The VizWiz dataset \cite{Bafghi2023} presents unique difficulties due to its unconventional image characteristics - including blur, poor framing, and unusual angles - that are not typically seen in standard computer vision datasets.
+
+In this study, we investigate zero-shot image classification approaches on the VizWiz Image Classification Dataset, which contains images taken by blind photographers. Zero-shot learning is particularly valuable in this context as it eliminates the need for extensive labeled data from specialized populations. We evaluated several state-of-the-art models, including AlexNet \cite{AlexNet}, VGG11 \cite{VGG}, Vision Transformer (ViT) \cite{ViT}, and CLIP \cite{CLIP}, comparing their performance with multiple benchmark datasets.
+
+\section{Related Work}
+\subsection{VizWiz Dataset}
+
+The VizWiz Image Classification Dataset was introduced by Bafghi et al. \cite{Bafghi2023} as a benchmark to evaluate image classification models on pictures taken by blind individuals. Unlike curated datasets like ImageNet \cite{ImageNet}, VizWiz reflects the authentic challenges faced by visually impaired users, including motion blur, poor lighting, and partial object visibility. This dataset has become an important benchmark for evaluating visual recognition systems in the context of accessibility.
+
+\subsection{Zero-Shot Image Classification}
+
+Zero-shot learning has emerged as a promising direction for image classification without requiring examples of all possible classes during training. Early approaches relied on attribute-based descriptions \cite{ZSL1}, while more recent methods leverage pre-trained language models to establish connections between visual inputs and textual labels \cite{ZSL2}. CLIP \cite{CLIP} represents a significant advancement in this area, using contrastive learning between image and text embeddings to achieve impressive zero-shot performance across various visual tasks.
+
+\subsection{Vision Models}
+
+We evaluate several key vision architectures in our study: AlexNet \cite{AlexNet}, which popularized deep convolutional networks for image classification; VGG11 \cite{VGG}, known for its uniform architecture of stacked convolutional layers; Vision Transformer (ViT) \cite{ViT}, which adapts transformer architectures from NLP to computer vision tasks; and CLIP \cite{CLIP}, which jointly trains image and text encoders on large-scale web data.
+\section{Methodology}
+\subsection{Datasets}
+
+Our experiments utilize four datasets:
+\begin{itemize}
+    \item \textbf{ImageNet}: The standard benchmark with 1,000 object categories.
+    \item \textbf{ImageNet V2}: A new test set following ImageNet's protocol but with different images.
+    \item \textbf{ObjectNet}: A test set focusing on objects in challenging poses and contexts.
+    \item \textbf{VizWiz}: Images captured by blind individuals, presenting unique accessibility challenges.
+\end{itemize}
+
+\subsection{Model Architecture Comparison}
+
+We evaluated four deep learning architectures:
+\begin{itemize}
+    \item \textbf{AlexNet}: An early CNN architecture with 5 convolutional layers.
+    \item \textbf{VGG11}: A deeper network with uniform 3x3 convolutional filters.
+    \item \textbf{ViT}: A transformer-based approach that processes image patches.
+    \item \textbf{CLIP}: A dual-encoder model combining visual and textual information.
+\end{itemize}
+
+For all models except CLIP, we utilized pre-trained weights from ImageNet and evaluated their transfer learning capabilities to other datasets. For CLIP, we leveraged its zero-shot classification abilities through prompt engineering.
+
+\subsection{CLIP-based Zero-Shot Classification}
+
+Our CLIP implementation follows these key steps:
+
+\subsubsection{Prompt Engineering}
+We formatted class labels to match CLIP's pre-training by creating simple prompts: "a photo of a [class]" for each ImageNet class.
+
+\subsubsection{Embedding Creation}
+For both text prompts and images:
+\begin{itemize}
+    \item Text prompts were tokenized and encoded using CLIP's text encoder.
+    \item Test images were processed and encoded using CLIP's image encoder.
+    \item All embeddings were normalized to unit length.
+\end{itemize}
+
+\subsubsection{K-Nearest Neighbors Voting}
+We implemented a k-NN voting approach:
+\begin{itemize}
+    \item For each test image, we found the k most similar training images.
+    \item Each similar image "voted" for a class based on its embedding's similarity to text prompts.
+    \item The class with the most votes became the final prediction.
+\end{itemize}
+\section{Implementation}
+Our implementation leverages PyTorch for model evaluation. In the following, we highlight key components of our CLIP-based classification pipeline.
+
+\subsection{Prompt Engineering and Text Embedding}
+
+We generate prompts by adding the prefix "a photo of a" to each ImageNet class label:
+
+\begin{lstlisting}[language=Python]
+prompts = [f"a photo of a {name}" for name in imagenet_classes]
+with torch.no_grad():
+    text_tokens = clip.tokenize(prompts).to(device)
+    text_features = model.encode_text(text_tokens)
+    text_features /= text_features.norm(dim=-1, keepdim=True)
+\end{lstlisting}
+\subsection{Image Embedding and Retrieval}
+
+For test images, we compute embeddings and compare them against a database of precomputed training embeddings:
+
+\begin{lstlisting}[language=Python]
+with open(train_embedding_path, "rb") as f:
+    train_embeddings_dict = pickle.load(f)
+    filenames = list(train_embeddings_dict.keys())
+    train_embeddings = torch.stack([train_embeddings_dict[f] for f in filenames]).to(device)
+    train_embeddings /= train_embeddings.norm(dim=-1, keepdim=True)
+
+test_image = preprocess(Image.open(test_image_path).convert("RGB")).unsqueeze(0).to(device)
+with torch.no_grad():
+    test_feature = model.encode_image(test_image)
+    test_feature /= test_feature.norm(dim=-1, keepdim=True)
+\end{lstlisting}
+\subsection{K-Nearest Neighbors Voting}
+
+We identify the k most similar training images and implement a voting scheme:
+
+\begin{lstlisting}[language=Python]
+similarities = test_feature @ train_embeddings.T
+topk_sim, topk_idx = similarities.topk(k, dim=1)
+Implement voting
+votes = []
+for idx in topk_idx[0]:
+    img_feat = train_embeddings[idx].unsqueeze(0)
+    text_sim = img_feat @ text_features.T
+    best_text_idx = text_sim.argmax().item()
+    votes.append(imagenet_classes[best_text_idx])
+
+vote_counts = Counter(votes)
+predicted_class, count = vote_counts.most_common(1)[0]
+\end{lstlisting}
+\section{Limitations}
+
+While our work provides valuable insights into using CLIP for image classification in assistive contexts, several limitations remain:
+
+\begin{itemize}
+    \item \textbf{Task Scope:} We focus exclusively on image classification. However, real-world assistive technologies often require more complex tasks such as object detection or instance segmentation to provide meaningful feedback to users.
+
+    \item \textbf{Computational Considerations:} Our analysis does not take into account computational efficiency, which is critical for deployment on mobile or embedded devices commonly used by visually impaired individuals.
+
+    \item \textbf{Dataset Constraints:} Although we employ diverse datasets, they still capture only a limited subset of real-world environments and scenarios encountered by users with visual impairments.
+
+    \item \textbf{Domain Misalignment:} The pretrained CLIP model exhibits poor domain alignment with assistive tasks, as it was trained on generic web data that may not reflect the visual content relevant to assistive use cases.
+
+    \item \textbf{Weak User Context Understanding:} The system lacks mechanisms to model or infer user intent or context, which limits its usefulness in practical, dynamic assistive settings.
+
+    \item \textbf{Voting Bias:} Our k-NN voting mechanism may suffer from class imbalance and bias in the training data, leading to skewed predictions in ambiguous or unseen scenarios.
+\end{itemize}
+
+
+\section{Experimental Results Analysis}
+
+\begin{itemize}[leftmargin=1.5em]
+    \item \textbf{Standard ImageNet:}  
+    All four vision models—AlexNet, VGG11, ViT, and CLIP—performed well on standard ImageNet, demonstrating high classification accuracy and serving as a baseline to assess their competence under ideal and well-curated conditions.
+
+    \item \textbf{ImageNetV2 (Distribution Shift):}  
+    When evaluated on ImageNetV2, which introduces slight distributional shifts, AlexNet exhibited a noticeable drop in performance. In contrast, VGG11, ViT, and CLIP maintained strong accuracy, showing better generalization across similar but shifted data.
+
+    \item \textbf{ObjectNet (Viewpoint and Context Variation):}  
+    ObjectNet challenged the spatial and contextual robustness of the models. The convolutional networks (AlexNet and VGG11) produced several incorrect predictions due to changes in object orientation and background context. Transformer-based models (ViT and CLIP), however, remained robust and showed significantly higher classification accuracy under these variations.
+
+    \item \textbf{VizWiz (Accessibility-Focused Dataset):}  
+    The VizWiz dataset, composed of low-quality and often poorly framed images taken by blind users, proved the most difficult. All models produced divergent and frequently incorrect predictions for the same images. This inconsistency highlights the severe challenges current vision architectures face in accessibility-related, real-world applications.
+
+    \begin{itemize}
+    \item \textbf{Standard CLIP:} 62\% accuracy.
+    \item \textbf{Voting-based CLIP:} 74\% accuracy.
+    \end{itemize}
+    
+\end{itemize}
+
+\section{Conclusion}
+
+We evaluated several deep learning models for zero-shot image classification on the VizWiz dataset, which contains photos taken by blind users. Among them, CLIP demonstrated the highest robustness, highlighting the benefits of large-scale multimodal pretraining for generalization to real-world assistive scenarios.
+
+Despite this, all models showed significant performance drops compared to standard datasets, emphasizing the need for vision systems trained and tested on data that reflects the experiences of visually impaired users. This gap reinforces the importance of domain-specific evaluation.
+
+Future work should focus on adapting models to the unique visual patterns in assistive datasets, incorporating user context, and extending beyond classification to object detection and segmentation. These steps are critical to building reliable and practical assistive technologies.
+\\
+\\
+\\
+\\
+
+\printbibliography
+
+%----------------------------------------------------------
+\end{document}

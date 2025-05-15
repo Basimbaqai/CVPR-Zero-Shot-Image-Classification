@@ -469,7 +469,7 @@
     sorting=ynt
 ]{biblatex}
 
-\addbibresource{tau.bib}
+\addbibresource{references.bib}
 
 %----------------------------------------------------------
 
